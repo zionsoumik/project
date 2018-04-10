@@ -54,16 +54,25 @@ for j in range(0,50000):
 expected_gain=0
 print(prob_c_d)
 counter_pcd=[]
-counter_pcd.append(Counter(tuple(x) for x in iter(prob_c_d[0])))
-counter_pcd.append(Counter(tuple(x) for x in iter(prob_c_d[1])))
-
-
+for i in range(0,k):
+    counter_pcd.append(Counter(tuple(x) for x in iter(prob_c_d[k])))
+#counter_pcd.append(Counter(tuple(x) for x in iter(prob_c_d[1])))
+sum1=[]
+for i in range(0,k):
+    sum1.append(sum(counter_pcd[k].values()))
+#sum1=sum(counter_pcd[1].values())
 f1=Counter(tuple(x) for x in iter(prob_d))
+prior=[]
 for key in f1.keys():
-    if key in counter_pcd[0].keys():
-        counter_pcd[0][key]=counter_pcd[0][key]/f1[key]
-    if key in counter_pcd[1].keys():
-        counter_pcd[1][key] = counter_pcd[1][key] / f1[key]
+    for j in range(0,k):
+        if key in counter_pcd[j].keys():
+            counter_pcd[j][key]=counter_pcd[j][key]*prior[j]
+            hj=0
+            for h in range(0,k):
+                hj+=counter_pcd[h][key]*prior[h]
+            counter_pcd[j][key]=counter_pcd[j][key]/hj
+    #if key in counter_pcd[1].keys():
+        #counter_pcd[1][key] = counter_pcd[1][key] / f1[key]
 
 
 print(counter_pcd)
@@ -71,21 +80,27 @@ eval=pd.read_csv("eval.csv")
 hdlist=list(eval.columns.values)
 gain=0
 ev=[]
+f=[]
+k=2
 economic_gain=[]
+for i in range(0,k):
+    f.append(0)
 for q in ev:
-    f0 = counter_pcd[0][q[:-1]] * economic_gain[0][0] + counter_pcd[1][q[:-1]] * economic_gain[1][0]
-    f1 = counter_pcd[0][q[:-1]] * economic_gain[0][1] + counter_pcd[1][q[:-1]] * economic_gain[1][1]
-    assigned = 1
-    if f0 > f1:
-        assigned = 0
-    if assigned == 0 and q[-1] == 1.0:
-        gain += economic_gain[0][1] * counter_pcd[0][q[:-1]]
-    elif assigned == 0 and q[-1] == 0.0:
-        gain += economic_gain[0][0] * counter_pcd[0][q[:-1]]
-    elif assigned == 1 and q[-1] == 1.0:
-        gain += economic_gain[1][1] * counter_pcd[1][q[:-1]]
-    elif assigned == 1 and q[-1] == 0.0:
-        gain += economic_gain[1][0] * counter_pcd[1][q[:-1]]
+    for j in range(0,k):
+        for i in range(0,k):
+            f[j]+=counter_pcd[k][q[:-1]]*economic_gain[i][k]
+        #f0 = counter_pcd[0][q[:-1]] * economic_gain[0][0] + counter_pcd[1][q[:-1]] * economic_gain[1][0]
+        #f1 = counter_pcd[0][q[:-1]] * economic_gain[0][1] + counter_pcd[1][q[:-1]] * economic_gain[1][1]
+    assigned = max(f)
+    gain+=economic_gain[assigned][q[-1]]*counter_pcd[assigned][q[:-1]]
+    # if assigned == 0 and q[-1] == 1.0:
+    #     gain += economic_gain[0][1] * counter_pcd[0][q[:-1]]
+    # elif assigned == 0 and q[-1] == 0.0:
+    #     gain += economic_gain[0][0] * counter_pcd[0][q[:-1]]
+    # elif assigned == 1 and q[-1] == 1.0:
+    #     gain += economic_gain[1][1] * counter_pcd[1][q[:-1]]
+    # elif assigned == 1 and q[-1] == 0.0:
+    #     gain += economic_gain[1][0] * counter_pcd[1][q[:-1]]
 #print(gain)
 print(gain)
 #print(len(f1))
