@@ -192,27 +192,45 @@ for c1 in range(0,len(boundaries)):
                             break
                 tup += (row[5],)
                 ev1.append(tup)
-            #print(len(ev1))
-            for q in ev1:
-                f0=counter_pcd[0][q[:-1]]*economic_gain[0][0]+counter_pcd[1][q[:-1]]*economic_gain[1][0]
-                f1=counter_pcd[0][q[:-1]]*economic_gain[0][1]+counter_pcd[1][q[:-1]]*economic_gain[1][1]
-                assigned=1
-                if f0>f1:
-                    assigned=0
-                if assigned==0 and q[-1]==1.0:
-                    gain1+=economic_gain[0][1]
-                elif assigned==0 and q[-1]==0.0:
-                    gain1+=economic_gain[0][0]
-                elif assigned==1 and q[-1]==1.0:
-                    gain1+=economic_gain[1][1]
-                elif assigned==1 and q[-1]==0.0:
-                    gain1+=economic_gain[1][0]
-            #print("gain1",gain1)
-            if gain1>gain:
-                #print("gain1",num2)
-                gain=gain1
+            new_counter_pd = Counter(x for x in ev1)
+            g = list(new_counter_pd.keys())
+            new_sum = sum(new_counter_pd.values())
+            # new_sum1 = sum(new_counter_pcd[1].values())
+
+            # print(counter_pd)
+            for i in range(0, len(g)):
+                # print(g[i])
+                new_counter_pd[g[i]] = new_counter_pd[g[i]] / new_sum
+            economic_gain = [[1, -1], [-2, 3]]
+            #print("new_counter:", new_counter_pd)
+            # new_sum0 = sum(new_counter_pcd[0].values())
+            # new_sum1 = sum(new_counter_pcd[1].values())
+            # print("new_sum",new_sum1,new_sum0)
+            gain = 0
+            for q in new_counter_pd.keys():
+                #print(q[:-1])
+                f0 = counter_pcd[0][q[:-1]] * economic_gain[0][0] + counter_pcd[1][q[:-1]] * economic_gain[1][0]
+                f1 = counter_pcd[0][q[:-1]] * economic_gain[0][1] + counter_pcd[1][q[:-1]] * economic_gain[1][1]
+                assigned = 1
+                #print("f0", f0)
+                #print("f1", f1)
+                if f0 > f1:
+                    assigned = 0
+                #print(q[-1])
+                if assigned == 0 and q[-1] == 1.0:
+                    gain += economic_gain[0][1] * new_counter_pd[q]
+                elif assigned == 0 and q[-1] == 0.0:
+                    gain += economic_gain[0][0] * new_counter_pd[q]
+                elif assigned == 1 and q[-1] == 1.0:
+                    gain += economic_gain[1][1] * new_counter_pd[q]
+                elif assigned == 1 and q[-1] == 0.0:
+                    gain += economic_gain[1][0] * new_counter_pd[q]
+            if gain>gain1:
+                #print("gain1",gain)
+                gain1=gain
                 boundaries[c1][c2]=b1
+print("gain:",gain1)
 print(boundaries)
-with open("boundaries1.txt","w", newline='') as f:
+with open("boundaries3.txt","w", newline='') as f:
     wr = csv.writer(f)
     wr.writerows(boundaries)
